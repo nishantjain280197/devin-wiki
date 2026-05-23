@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Devin AI Session Invitation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      background: #0a0a14;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    }
+
+    .invitation {
+      width: 900px;
+      height: 500px;
+      background: linear-gradient(145deg, #0f0f1a 0%, #141428 50%, #0f0f1a 100%);
+      border-radius: 20px;
+      border: 1px solid rgba(108, 99, 255, 0.2);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Subtle grid pattern */
+    .invitation::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+    }
+
+    /* Top accent glow */
+    .glow-top {
+      position: absolute;
+      top: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 500px;
+      height: 200px;
+      background: radial-gradient(ellipse, rgba(108,99,255,0.2), transparent 70%);
+      pointer-events: none;
+    }
+
+    /* Corner accents */
+    .corner-accent {
+      position: absolute;
+      width: 80px;
+      height: 80px;
+      border: 2px solid rgba(108,99,255,0.15);
+      pointer-events: none;
+    }
+    .corner-accent.tl { top: 16px; left: 16px; border-right: none; border-bottom: none; border-radius: 8px 0 0 0; }
+    .corner-accent.tr { top: 16px; right: 16px; border-left: none; border-bottom: none; border-radius: 0 8px 0 0; }
+    .corner-accent.bl { bottom: 16px; left: 16px; border-right: none; border-top: none; border-radius: 0 0 0 8px; }
+    .corner-accent.br { bottom: 16px; right: 16px; border-left: none; border-top: none; border-radius: 0 0 8px 0; }
+
+    /* Header bar */
+    .header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 40px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(108, 99, 255, 0.1);
+      border: 1px solid rgba(108, 99, 255, 0.25);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #a89bff;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .badge .dot {
+      width: 6px;
+      height: 6px;
+      background: #6c63ff;
+      border-radius: 50%;
+    }
+
+    .company-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .company-logo svg {
+      height: 28px;
+      width: auto;
+    }
+    .company-logo .company-name {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Main content */
+    .content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 60px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .title {
+      font-size: 2.6rem;
+      font-weight: 800;
+      line-height: 1.2;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+
+    .title .highlight {
+      background: linear-gradient(135deg, #6c63ff, #00d4aa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 32px;
+      font-weight: 400;
+    }
+
+    /* Info cards row */
+    .info-row {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 28px;
+    }
+
+    .info-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 22px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(108,99,255,0.12);
+      border-radius: 12px;
+      min-width: 200px;
+    }
+
+    .info-card .icon-box {
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(108, 99, 255, 0.1);
+      border-radius: 10px;
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+
+    .info-card .info-text {
+      text-align: left;
+    }
+
+    .info-card .info-label {
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.35);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .info-card .info-value {
+      font-size: 0.92rem;
+      color: #e8e8f0;
+      font-weight: 600;
+    }
+
+    /* Topics */
+    .topics {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .topic-tag {
+      padding: 6px 16px;
+      background: rgba(108,99,255,0.06);
+      border: 1px solid rgba(108,99,255,0.12);
+      border-radius: 8px;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.6);
+      font-weight: 500;
+    }
+
+    /* Footer */
+    .footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .footer-note {
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.25);
+      font-weight: 500;
+    }
+
+    .footer-link {
+      font-size: 0.78rem;
+      color: #6c63ff;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    /* Divider line */
+    .divider {
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(90deg, #6c63ff, #00d4aa);
+      border-radius: 3px;
+      margin: 0 auto 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="invitation">
+    <div class="glow-top"></div>
+    <div class="corner-accent tl"></div>
+    <div class="corner-accent tr"></div>
+    <div class="corner-accent bl"></div>
+    <div class="corner-accent br"></div>
+
+    <!-- Header -->
+    <div class="header-bar">
+      <div class="badge">
+        <span class="dot"></span>
+        Team Session
+      </div>
+      <div class="company-logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/c/cd/Accenture.svg" alt="Accenture" style="height: 28px; width: auto;" />
+      </div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+      <div class="title">
+        Introducing <span class="highlight">Devin AI</span>
+      </div>
+      <div class="subtitle">The World's First AI Software Engineer — A Deep Dive for the Team</div>
+
+      <div class="divider"></div>
+
+      <div class="info-row">
+        <div class="info-card">
+          <div class="icon-box">📅</div>
+          <div class="info-text">
+            <div class="info-label">Date</div>
+            <div class="info-value">28 May 2026</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="icon-box">🕐</div>
+          <div class="info-text">
+            <div class="info-label">Time</div>
+            <div class="info-value">6:00 PM IST / 7:30 AM CST</div>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="icon-box">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M3 5.5C3 4.11929 4.11929 3 5.5 3H18.5C19.8807 3 21 4.11929 21 5.5V18.5C21 19.8807 19.8807 21 18.5 21H5.5C4.11929 21 3 19.8807 3 18.5V5.5Z" fill="#5B5FC7"/>
+              <path d="M8.5 7H11.5V10H8.5V7Z" fill="white"/>
+              <path d="M12.5 7H15.5V10H12.5V7Z" fill="white" opacity="0.7"/>
+              <path d="M8.5 11H11.5V14H8.5V11Z" fill="white" opacity="0.7"/>
+              <path d="M12.5 11H15.5V14H12.5V11Z" fill="white" opacity="0.5"/>
+              <path d="M8.5 15H11.5V18H8.5V15Z" fill="white" opacity="0.5"/>
+              <path d="M12.5 15H15.5V18H12.5V15Z" fill="white" opacity="0.3"/>
+            </svg>
+          </div>
+          <div class="info-text">
+            <div class="info-label">Venue</div>
+            <div class="info-value">Microsoft Teams</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="topics">
+        <div class="topic-tag">What is Devin AI</div>
+        <div class="topic-tag">Devin vs Copilot / Claude / OpenCode</div>
+        <div class="topic-tag">SDLC → ADLC</div>
+        <div class="topic-tag">Live Demo</div>
+        <div class="topic-tag">Why Devin Stands Out</div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-bar">
+      <div class="footer-note">An interactive session — come with questions!</div>
+      <div class="footer-link">devin.ai</div>
+    </div>
+  </div>
+</body>
+</html>
