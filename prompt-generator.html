@@ -1125,20 +1125,12 @@
               </div>
             </div>
 
-            <!-- Send to Devin Config -->
+            <!-- Copy & Open Devin -->
             <div class="api-config">
-              <h3>Send to Devin (Optional)</h3>
-              <p class="api-desc">Create a Devin session directly with this prompt. Requires your Devin API key and Org ID.</p>
-              <div class="form-row">
-                <div class="api-key-input" style="flex:1;">
-                  <input type="password" id="devinApiKey" placeholder="Devin API key">
-                </div>
-                <div class="api-key-input" style="flex:1;">
-                  <input type="text" id="devinOrgId" placeholder="Org ID (e.g., org-abc123)">
-                </div>
-              </div>
-              <div style="margin-top:0.8rem;">
-                <button class="btn btn-success" onclick="sendToDevin()" id="sendDevinBtn">Send to Devin</button>
+              <h3>Open in Devin</h3>
+              <p class="api-desc">Copy the generated prompt to your clipboard and open Devin in a new tab. Just paste the prompt into a new session.</p>
+              <div>
+                <button class="btn btn-success" onclick="copyAndOpenDevin()" id="openDevinBtn">Copy &amp; Open Devin</button>
               </div>
             </div>
 
@@ -1818,54 +1810,29 @@ async function callAnthropic(apiKey, prompt) {
 }
 
 // ============================================================
-// SEND TO DEVIN
+// COPY & OPEN DEVIN
 // ============================================================
-async function sendToDevin() {
-  const apiKey = document.getElementById('devinApiKey').value.trim();
-  const orgId = document.getElementById('devinOrgId').value.trim();
-
-  if (!apiKey || !orgId) {
-    showToast('Please enter both your Devin API key and Org ID.', 'error');
-    return;
-  }
-
+function copyAndOpenDevin() {
   const currentPrompt = document.getElementById('outputBox').textContent;
   if (!currentPrompt || currentPrompt === 'Your prompt will appear here after generation...') {
-    showToast('Generate a prompt first before sending to Devin.', 'error');
+    showToast('Generate a prompt first.', 'error');
     return;
   }
 
-  const btn = document.getElementById('sendDevinBtn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span> Creating session...';
-
-  try {
-    const response = await fetch(`https://api.devin.ai/v3/organizations/${orgId}/sessions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        prompt: currentPrompt
-      })
-    });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.message || err.detail || `Devin API returned ${response.status}`);
-    }
-
-    const result = await response.json();
-    const sessionUrl = result.url || `https://app.devin.ai/sessions/${result.session_id}`;
-    showToast('Devin session created! Opening...', 'success');
-    window.open(sessionUrl, '_blank');
-  } catch (err) {
-    showToast(`Failed to create Devin session: ${err.message}`, 'error');
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = 'Send to Devin';
-  }
+  navigator.clipboard.writeText(currentPrompt).then(() => {
+    showToast('Prompt copied! Opening Devin...', 'success');
+    window.open('https://app.devin.ai', '_blank');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = currentPrompt;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Prompt copied! Opening Devin...', 'success');
+    window.open('https://app.devin.ai', '_blank');
+  });
 }
 
 // ============================================================
