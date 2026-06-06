@@ -1,0 +1,2005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Devin AI — Prompt Generator for Insurance Projects</title>
+  <style>
+    /* ========== CSS RESET & VARIABLES ========== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f0f1a;
+      --surface: #1a1a2e;
+      --surface-hover: #222240;
+      --accent: #6c63ff;
+      --accent-glow: rgba(108, 99, 255, 0.35);
+      --accent2: #00d4aa;
+      --accent3: #ff6b6b;
+      --text: #e8e8f0;
+      --text-muted: #9494b8;
+      --card-radius: 16px;
+      --transition: 0.3s cubic-bezier(.4,0,.2,1);
+      --success: #00d4aa;
+      --warning: #ffc107;
+      --danger: #ff6b6b;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ========== ANIMATED BACKGROUND ========== */
+    .bg-particles {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+    }
+    .bg-particles span {
+      position: absolute;
+      width: 4px; height: 4px;
+      background: var(--accent);
+      border-radius: 50%;
+      opacity: 0;
+      animation: float-particle linear infinite;
+    }
+    @keyframes float-particle {
+      0%   { opacity: 0; transform: translateY(100vh) scale(0); }
+      10%  { opacity: 1; }
+      90%  { opacity: 1; }
+      100% { opacity: 0; transform: translateY(-10vh) scale(1); }
+    }
+
+    /* ========== NAVIGATION ========== */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      background: rgba(15,15,26,.92);
+      backdrop-filter: blur(16px);
+      z-index: 1000;
+      padding: 0 2rem;
+      border-bottom: 1px solid rgba(108,99,255,.15);
+    }
+    nav .nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      height: 64px;
+    }
+    nav .logo {
+      font-size: 1.4rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      text-decoration: none;
+    }
+    nav ul {
+      list-style: none; display: flex; gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: var(--text-muted); text-decoration: none;
+      padding: 0.4rem 0.9rem; border-radius: 8px;
+      font-size: 0.85rem; font-weight: 500;
+      transition: var(--transition);
+    }
+    nav a:hover, nav a.active {
+      color: #fff; background: rgba(108,99,255,.15);
+    }
+    .nav-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; }
+    @media (max-width: 768px) {
+      .nav-toggle { display: block; }
+      nav ul { display: none; flex-direction: column; position: absolute; top: 64px; left: 0; right: 0; background: rgba(15,15,26,.98); padding: 1rem; }
+      nav ul.open { display: flex; }
+    }
+
+    /* ========== PAGE HEADER ========== */
+    .page-header {
+      padding: 7rem 2rem 3rem;
+      text-align: center;
+      position: relative;
+    }
+    .page-header::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 50% 30%, var(--accent-glow), transparent 70%);
+      pointer-events: none;
+    }
+    .page-header h1 {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      margin-bottom: 0.8rem;
+      position: relative; z-index: 1;
+    }
+    .page-header h1 .gradient {
+      background: linear-gradient(135deg, var(--accent), var(--accent2), #a78bfa);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .page-header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      max-width: 650px;
+      margin: 0 auto;
+      position: relative; z-index: 1;
+    }
+
+    /* ========== MAIN CONTAINER ========== */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+    }
+
+    /* ========== PROGRESS BAR ========== */
+    .wizard-progress {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+    .wizard-step-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0;
+    }
+    .step-dot {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.85rem; font-weight: 700;
+      border: 2px solid rgba(108,99,255,.3);
+      background: var(--surface);
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+    }
+    .step-dot.active {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .step-dot.completed {
+      border-color: var(--accent2);
+      background: var(--accent2);
+      color: #fff;
+    }
+    .step-dot .step-label {
+      position: absolute;
+      top: 48px;
+      font-size: 0.7rem;
+      white-space: nowrap;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .step-dot.active .step-label { color: var(--accent); }
+    .step-dot.completed .step-label { color: var(--accent2); }
+    .step-connector {
+      width: 50px; height: 2px;
+      background: rgba(108,99,255,.2);
+      transition: var(--transition);
+    }
+    .step-connector.completed { background: var(--accent2); }
+    @media (max-width: 600px) {
+      .step-connector { width: 20px; }
+      .step-dot { width: 32px; height: 32px; font-size: 0.75rem; }
+      .step-dot .step-label { font-size: 0.6rem; top: 38px; }
+    }
+
+    /* ========== WIZARD PANELS ========== */
+    .wizard-panel {
+      display: none;
+      animation: fadeSlideIn 0.4s ease;
+    }
+    .wizard-panel.active { display: block; }
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel-card {
+      background: var(--surface);
+      border: 1px solid rgba(108,99,255,.1);
+      border-radius: var(--card-radius);
+      padding: 2.5rem;
+      margin-bottom: 2rem;
+    }
+    .panel-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .panel-card .panel-desc {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      margin-bottom: 2rem;
+    }
+
+    /* ========== FORM ELEMENTS ========== */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+    .form-group label .required {
+      color: var(--accent3);
+      margin-left: 2px;
+    }
+    .form-group input[type="text"],
+    .form-group input[type="url"],
+    .form-group input[type="number"],
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(108,99,255,.15);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.95rem;
+      font-family: inherit;
+      transition: var(--transition);
+      outline: none;
+    }
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .form-group textarea { min-height: 100px; resize: vertical; }
+    .form-group select { cursor: pointer; }
+    .form-group select option { background: var(--surface); color: var(--text); }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+    @media (max-width: 600px) {
+      .form-row { grid-template-columns: 1fr; }
+    }
+
+    /* ========== CHECKBOX / TOGGLE GROUP ========== */
+    .checkbox-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+      gap: 0.8rem;
+    }
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.8rem 1rem;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(108,99,255,.1);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+    }
+    .checkbox-item:hover { border-color: rgba(108,99,255,.3); }
+    .checkbox-item.checked {
+      border-color: var(--accent);
+      background: rgba(108,99,255,.08);
+    }
+    .checkbox-item input[type="checkbox"] { display: none; }
+    .checkbox-item .check-box {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(108,99,255,.3);
+      border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      transition: var(--transition);
+      flex-shrink: 0;
+    }
+    .checkbox-item.checked .check-box {
+      background: var(--accent);
+      border-color: var(--accent);
+    }
+    .checkbox-item.checked .check-box::after {
+      content: '\2713';
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .checkbox-item .check-label {
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+    .checkbox-item .check-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* ========== TEMPLATE SELECTOR ========== */
+    .template-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .template-card {
+      background: rgba(255,255,255,.03);
+      border: 2px solid rgba(108,99,255,.12);
+      border-radius: var(--card-radius);
+      padding: 1.5rem;
+      cursor: pointer;
+      transition: var(--transition);
+      text-align: center;
+    }
+    .template-card:hover { border-color: rgba(108,99,255,.4); transform: translateY(-2px); }
+    .template-card.selected {
+      border-color: var(--accent);
+      background: rgba(108,99,255,.08);
+      box-shadow: 0 0 20px var(--accent-glow);
+    }
+    .template-card .tmpl-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+    .template-card .tmpl-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
+    .template-card .tmpl-desc { font-size: 0.78rem; color: var(--text-muted); }
+
+    /* ========== TAGS INPUT ========== */
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      padding: 0.5rem;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(108,99,255,.15);
+      border-radius: 10px;
+      min-height: 44px;
+      align-items: center;
+      cursor: text;
+    }
+    .tags-container:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.7rem;
+      background: rgba(108,99,255,.15);
+      border: 1px solid rgba(108,99,255,.3);
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--accent);
+    }
+    .tag .tag-remove {
+      cursor: pointer;
+      font-size: 0.9rem;
+      line-height: 1;
+      opacity: 0.7;
+      transition: var(--transition);
+    }
+    .tag .tag-remove:hover { opacity: 1; color: var(--accent3); }
+    .tags-input {
+      border: none;
+      background: none;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+      flex: 1;
+      min-width: 120px;
+      padding: 0.3rem;
+    }
+
+    /* ========== BUTTONS ========== */
+    .btn {
+      padding: 0.8rem 1.8rem;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent), #8b7bff);
+      color: #fff;
+      box-shadow: 0 4px 24px var(--accent-glow);
+    }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px var(--accent-glow); }
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+    }
+    .btn-outline:hover { background: rgba(108,99,255,.1); }
+    .btn-secondary {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(108,99,255,.2);
+      color: var(--text);
+    }
+    .btn-secondary:hover { background: rgba(108,99,255,.1); }
+    .btn-success {
+      background: linear-gradient(135deg, var(--accent2), #00b894);
+      color: #fff;
+    }
+    .btn-success:hover { transform: translateY(-2px); box-shadow: 0 4px 24px rgba(0,212,170,.3); }
+    .btn-danger {
+      background: rgba(255,107,107,.15);
+      border: 1px solid rgba(255,107,107,.3);
+      color: var(--accent3);
+    }
+    .btn-danger:hover { background: rgba(255,107,107,.25); }
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none !important;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+    .btn-group-right {
+      display: flex;
+      gap: 0.8rem;
+    }
+
+    /* ========== OUTPUT PANEL ========== */
+    .output-container {
+      position: relative;
+    }
+    .output-box {
+      background: rgba(0,0,0,.3);
+      border: 1px solid rgba(108,99,255,.15);
+      border-radius: var(--card-radius);
+      padding: 2rem;
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.88rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+      max-height: 500px;
+      overflow-y: auto;
+      color: var(--text);
+    }
+    .output-box::-webkit-scrollbar { width: 6px; }
+    .output-box::-webkit-scrollbar-track { background: transparent; }
+    .output-box::-webkit-scrollbar-thumb { background: rgba(108,99,255,.3); border-radius: 3px; }
+
+    .output-actions {
+      display: flex;
+      gap: 0.8rem;
+      margin-top: 1.2rem;
+      flex-wrap: wrap;
+    }
+
+    /* ========== API CONFIG PANEL ========== */
+    .api-config {
+      background: linear-gradient(135deg, var(--surface), rgba(108,99,255,.04));
+      border: 1px solid rgba(108,99,255,.15);
+      border-radius: var(--card-radius);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+    .api-config h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .api-config .api-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.2rem;
+    }
+    .api-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.2rem;
+    }
+    .api-tab {
+      padding: 0.5rem 1rem;
+      border: 1px solid rgba(108,99,255,.2);
+      background: none;
+      color: var(--text-muted);
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+    .api-tab:hover { border-color: var(--accent); color: var(--accent); }
+    .api-tab.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .api-key-input {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+    }
+    .api-key-input input {
+      flex: 1;
+      padding: 0.7rem 1rem;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(108,99,255,.15);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: monospace;
+      outline: none;
+      transition: var(--transition);
+    }
+    .api-key-input input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    /* ========== TOAST NOTIFICATION ========== */
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      z-index: 9999;
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s ease;
+    }
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    .toast-success { background: rgba(0,212,170,.15); border: 1px solid var(--accent2); color: var(--accent2); }
+    .toast-error { background: rgba(255,107,107,.15); border: 1px solid var(--accent3); color: var(--accent3); }
+    .toast-info { background: rgba(108,99,255,.15); border: 1px solid var(--accent); color: var(--accent); }
+
+    /* ========== LOADING SPINNER ========== */
+    .spinner {
+      display: inline-block;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ========== PRESET MANAGER ========== */
+    .preset-bar {
+      display: flex;
+      gap: 0.8rem;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+      padding: 1rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid rgba(108,99,255,.1);
+      border-radius: var(--card-radius);
+    }
+    .preset-bar label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .preset-bar select {
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,.04);
+      border: 1px solid rgba(108,99,255,.15);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 0.85rem;
+      outline: none;
+      cursor: pointer;
+      flex: 1;
+      max-width: 300px;
+    }
+
+    /* ========== LIVE PREVIEW SIDEBAR ========== */
+    .layout-split {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+    @media (min-width: 900px) {
+      .layout-split.show-preview {
+        grid-template-columns: 1fr 400px;
+      }
+    }
+    .live-preview {
+      position: sticky;
+      top: 80px;
+      background: var(--surface);
+      border: 1px solid rgba(108,99,255,.1);
+      border-radius: var(--card-radius);
+      padding: 1.5rem;
+      max-height: calc(100vh - 100px);
+      overflow-y: auto;
+      display: none;
+    }
+    .live-preview.visible { display: block; }
+    .live-preview h3 {
+      font-size: 1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .live-preview .preview-content {
+      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--text-muted);
+    }
+    .live-preview::-webkit-scrollbar { width: 4px; }
+    .live-preview::-webkit-scrollbar-track { background: transparent; }
+    .live-preview::-webkit-scrollbar-thumb { background: rgba(108,99,255,.3); border-radius: 2px; }
+
+    .toggle-preview-btn {
+      position: fixed;
+      right: 1rem;
+      bottom: 5rem;
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px var(--accent-glow);
+      transition: var(--transition);
+      z-index: 100;
+    }
+    .toggle-preview-btn:hover { transform: scale(1.1); }
+
+    /* ========== FOOTER ========== */
+    footer {
+      text-align: center;
+      padding: 3rem 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      border-top: 1px solid rgba(108,99,255,.1);
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    /* ========== MODAL ========== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.7);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid rgba(108,99,255,.2);
+      border-radius: var(--card-radius);
+      padding: 2.5rem;
+      max-width: 500px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h3 { margin-bottom: 1rem; }
+    .modal .form-group { margin-bottom: 1rem; }
+    .modal .btn-group { margin-top: 1.5rem; justify-content: flex-end; }
+  </style>
+</head>
+<body>
+
+  <!-- Animated background particles -->
+  <div class="bg-particles" id="particles"></div>
+
+  <!-- Navigation -->
+  <nav>
+    <div class="nav-inner">
+      <a href="index.html" class="logo">Devin AI</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">&#9776;</button>
+      <ul id="navMenu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="prompt-generator.html" class="active">Prompt Generator</a></li>
+        <li><a href="invitation.html">Session Invite</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Page Header -->
+  <header class="page-header">
+    <h1><span class="gradient">Prompt Generator</span></h1>
+    <p>Build standardized, protocol-compliant prompts for Devin AI that meet your insurance company's engineering standards.</p>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- Preset Bar -->
+    <div class="preset-bar">
+      <label>Load Preset:</label>
+      <select id="presetSelect">
+        <option value="">-- Select a saved preset --</option>
+      </select>
+      <button class="btn btn-secondary" onclick="loadPreset()" title="Load selected preset">Load</button>
+      <button class="btn btn-secondary" onclick="openSavePresetModal()" title="Save current form as preset">Save As...</button>
+      <button class="btn btn-danger" onclick="deletePreset()" title="Delete selected preset" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Delete</button>
+    </div>
+
+    <!-- Template Quick-Start -->
+    <div class="panel-card" style="margin-bottom: 2rem;">
+      <h2>Quick Start: Insurance Templates</h2>
+      <p class="panel-desc">Select a template to pre-fill standards and protocols for common insurance project types.</p>
+      <div class="template-grid" id="templateGrid">
+        <!-- Templates injected by JS -->
+      </div>
+    </div>
+
+    <!-- Wizard Progress -->
+    <div class="wizard-progress" id="wizardProgress">
+      <!-- Injected by JS -->
+    </div>
+
+    <!-- Layout: Form + Live Preview -->
+    <div class="layout-split" id="layoutSplit">
+      <div class="wizard-form">
+
+        <!-- STEP 1: Project Info -->
+        <div class="wizard-panel active" data-step="1">
+          <div class="panel-card">
+            <h2>Step 1: Project Information</h2>
+            <p class="panel-desc">Describe the project or feature you want Devin to build.</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Project Name <span class="required">*</span></label>
+                <input type="text" id="projectName" placeholder="e.g., Claims Processing API v2">
+              </div>
+              <div class="form-group">
+                <label>Project Type <span class="required">*</span></label>
+                <select id="projectType">
+                  <option value="">Select type...</option>
+                  <option value="new-feature">New Feature</option>
+                  <option value="bug-fix">Bug Fix</option>
+                  <option value="refactoring">Refactoring</option>
+                  <option value="api-integration">API Integration</option>
+                  <option value="migration">Migration</option>
+                  <option value="internal-tool">Internal Tool</option>
+                  <option value="customer-portal">Customer-Facing Portal</option>
+                  <option value="batch-processing">Batch Processing Job</option>
+                  <option value="data-pipeline">Data Pipeline</option>
+                  <option value="poc-prototype">PoC / Prototype</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Project Description <span class="required">*</span></label>
+              <textarea id="projectDescription" placeholder="Describe what you want to build. Be specific about the scope, requirements, and expected outcomes."></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Target System</label>
+                <select id="targetSystem">
+                  <option value="">Select target...</option>
+                  <option value="web-app">Web Application</option>
+                  <option value="rest-api">REST API</option>
+                  <option value="microservice">Microservice</option>
+                  <option value="batch-job">Batch Job</option>
+                  <option value="etl-pipeline">ETL Pipeline</option>
+                  <option value="mobile-app">Mobile App</option>
+                  <option value="desktop-app">Desktop Application</option>
+                  <option value="cli-tool">CLI Tool</option>
+                  <option value="library">Library / Package</option>
+                  <option value="infrastructure">Infrastructure / IaC</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Repository URL</label>
+                <input type="url" id="repoUrl" placeholder="https://github.com/org/repo">
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <div></div>
+              <div class="btn-group-right">
+                <button class="btn btn-primary" onclick="goToStep(2)">Next &rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 2: Role -->
+        <div class="wizard-panel" data-step="2">
+          <div class="panel-card">
+            <h2>Step 2: Your Role &amp; Team</h2>
+            <p class="panel-desc">Define your role so the prompt includes the right context and permissions.</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Your Role <span class="required">*</span></label>
+                <select id="userRole">
+                  <option value="">Select role...</option>
+                  <option value="software-engineer">Software Engineer</option>
+                  <option value="senior-engineer">Senior Software Engineer</option>
+                  <option value="tech-lead">Tech Lead</option>
+                  <option value="architect">Solution Architect</option>
+                  <option value="qa-engineer">QA Engineer</option>
+                  <option value="devops-engineer">DevOps / Platform Engineer</option>
+                  <option value="data-engineer">Data Engineer</option>
+                  <option value="product-manager">Product Manager</option>
+                  <option value="business-analyst">Business Analyst</option>
+                  <option value="manager">Engineering Manager</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label>Team / Department</label>
+                <input type="text" id="teamName" placeholder="e.g., Claims Engineering, Policy Admin">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Branch Naming Convention</label>
+                <input type="text" id="branchConvention" placeholder="e.g., feature/JIRA-123-description">
+              </div>
+              <div class="form-group">
+                <label>Commit Message Format</label>
+                <input type="text" id="commitFormat" placeholder="e.g., feat(scope): description [JIRA-123]">
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="goToStep(1)">&larr; Back</button>
+              <div class="btn-group-right">
+                <button class="btn btn-primary" onclick="goToStep(3)">Next &rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: Tech Stack -->
+        <div class="wizard-panel" data-step="3">
+          <div class="panel-card">
+            <h2>Step 3: Technology Stack</h2>
+            <p class="panel-desc">Specify the languages, frameworks, and tools for this project.</p>
+
+            <div class="form-group">
+              <label>Languages</label>
+              <div class="tags-container" id="languagesTags" onclick="this.querySelector('input').focus()">
+                <input type="text" class="tags-input" placeholder="Type and press Enter (e.g., Java, Python, TypeScript)" onkeydown="handleTagInput(event, 'languagesTags')">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Frameworks</label>
+              <div class="tags-container" id="frameworksTags" onclick="this.querySelector('input').focus()">
+                <input type="text" class="tags-input" placeholder="e.g., Spring Boot, React, .NET Core" onkeydown="handleTagInput(event, 'frameworksTags')">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Database</label>
+                <div class="tags-container" id="databaseTags" onclick="this.querySelector('input').focus()">
+                  <input type="text" class="tags-input" placeholder="e.g., PostgreSQL, Oracle, MongoDB" onkeydown="handleTagInput(event, 'databaseTags')">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Cloud / Infrastructure</label>
+                <select id="cloudProvider">
+                  <option value="">Select cloud...</option>
+                  <option value="aws">AWS</option>
+                  <option value="azure">Azure</option>
+                  <option value="gcp">Google Cloud</option>
+                  <option value="on-premise">On-Premise</option>
+                  <option value="hybrid">Hybrid</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Build / CI-CD Tools</label>
+              <div class="tags-container" id="cicdTags" onclick="this.querySelector('input').focus()">
+                <input type="text" class="tags-input" placeholder="e.g., Jenkins, GitHub Actions, Maven, Gradle" onkeydown="handleTagInput(event, 'cicdTags')">
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="goToStep(2)">&larr; Back</button>
+              <div class="btn-group-right">
+                <button class="btn btn-primary" onclick="goToStep(4)">Next &rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 4: Standards & Protocols -->
+        <div class="wizard-panel" data-step="4">
+          <div class="panel-card">
+            <h2>Step 4: Company Standards &amp; Protocols</h2>
+            <p class="panel-desc">Select the standards, compliance requirements, and quality gates that must be followed.</p>
+
+            <h3 style="font-size:1rem; margin-bottom:0.8rem; color:var(--accent);">Security &amp; Compliance</h3>
+            <div class="checkbox-grid" style="margin-bottom:1.5rem;">
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="soc2">
+                <span class="check-box"></span>
+                <span><span class="check-label">SOC 2 Type II</span><br><span class="check-desc">Audit controls &amp; data integrity</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="hipaa">
+                <span class="check-box"></span>
+                <span><span class="check-label">HIPAA</span><br><span class="check-desc">Protected health information</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="pci-dss">
+                <span class="check-box"></span>
+                <span><span class="check-label">PCI-DSS</span><br><span class="check-desc">Payment card data security</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="owasp">
+                <span class="check-box"></span>
+                <span><span class="check-label">OWASP Top 10</span><br><span class="check-desc">Web application security</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="naic">
+                <span class="check-box"></span>
+                <span><span class="check-label">NAIC Model Laws</span><br><span class="check-desc">Insurance regulatory compliance</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="gdpr-ccpa">
+                <span class="check-box"></span>
+                <span><span class="check-label">GDPR / CCPA</span><br><span class="check-desc">Data privacy regulations</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="encryption">
+                <span class="check-box"></span>
+                <span><span class="check-label">Encryption Standards</span><br><span class="check-desc">AES-256 at rest, TLS 1.2+ in transit</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="rbac">
+                <span class="check-box"></span>
+                <span><span class="check-label">Role-Based Access (RBAC)</span><br><span class="check-desc">Least privilege access control</span></span>
+              </label>
+            </div>
+
+            <h3 style="font-size:1rem; margin-bottom:0.8rem; color:var(--accent);">Code Quality &amp; Testing</h3>
+            <div class="checkbox-grid" style="margin-bottom:1.5rem;">
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="unit-tests">
+                <span class="check-box"></span>
+                <span><span class="check-label">Unit Tests Required</span><br><span class="check-desc">Min 80% code coverage</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="integration-tests">
+                <span class="check-box"></span>
+                <span><span class="check-label">Integration Tests</span><br><span class="check-desc">API &amp; service integration testing</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="code-review">
+                <span class="check-box"></span>
+                <span><span class="check-label">Code Review Policy</span><br><span class="check-desc">Min 2 approvals before merge</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="linting">
+                <span class="check-box"></span>
+                <span><span class="check-label">Linting / Static Analysis</span><br><span class="check-desc">ESLint, SonarQube, Checkstyle</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="type-safety">
+                <span class="check-box"></span>
+                <span><span class="check-label">Type Safety</span><br><span class="check-desc">Strong typing, no implicit any</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="error-handling">
+                <span class="check-box"></span>
+                <span><span class="check-label">Error Handling Standards</span><br><span class="check-desc">Structured errors, no silent catches</span></span>
+              </label>
+            </div>
+
+            <h3 style="font-size:1rem; margin-bottom:0.8rem; color:var(--accent);">Documentation &amp; Ops</h3>
+            <div class="checkbox-grid" style="margin-bottom:1.5rem;">
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="api-docs">
+                <span class="check-box"></span>
+                <span><span class="check-label">API Documentation</span><br><span class="check-desc">OpenAPI / Swagger specs</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="inline-docs">
+                <span class="check-box"></span>
+                <span><span class="check-label">Inline Documentation</span><br><span class="check-desc">JSDoc / Javadoc / docstrings</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="logging">
+                <span class="check-box"></span>
+                <span><span class="check-label">Structured Logging</span><br><span class="check-desc">JSON logs with correlation IDs</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="audit-trail">
+                <span class="check-box"></span>
+                <span><span class="check-label">Audit Trail</span><br><span class="check-desc">Track all data access &amp; mutations</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="accessibility">
+                <span class="check-box"></span>
+                <span><span class="check-label">Accessibility (WCAG 2.1 AA)</span><br><span class="check-desc">Keyboard nav, screen readers, contrast</span></span>
+              </label>
+              <label class="checkbox-item" onclick="toggleCheck(this)">
+                <input type="checkbox" name="standards" value="monitoring">
+                <span class="check-box"></span>
+                <span><span class="check-label">Health Checks / Monitoring</span><br><span class="check-desc">Readiness &amp; liveness endpoints</span></span>
+              </label>
+            </div>
+
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="goToStep(3)">&larr; Back</button>
+              <div class="btn-group-right">
+                <button class="btn btn-primary" onclick="goToStep(5)">Next &rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 5: Custom Rules -->
+        <div class="wizard-panel" data-step="5">
+          <div class="panel-card">
+            <h2>Step 5: Custom Rules &amp; Constraints</h2>
+            <p class="panel-desc">Add any project-specific rules, naming conventions, or constraints.</p>
+
+            <div class="form-group">
+              <label>Custom Rules</label>
+              <textarea id="customRules" placeholder="Enter any additional rules, one per line. Examples:
+- No third-party libraries without security review approval
+- All API endpoints must be versioned (e.g., /api/v1/)
+- Database migrations must be reversible
+- No PII in log files
+- All dates must use ISO 8601 format (UTC)
+- Feature flags required for new features" style="min-height:180px;"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Excluded Patterns (things Devin should NOT do)</label>
+              <textarea id="excludedPatterns" placeholder="Examples:
+- Do not modify existing database schema without migration scripts
+- Do not use deprecated APIs
+- Do not commit secrets or API keys
+- Do not bypass authentication middleware" style="min-height:120px;"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label>Reference Documentation URLs</label>
+              <div class="tags-container" id="refDocsTags" onclick="this.querySelector('input').focus()">
+                <input type="text" class="tags-input" placeholder="Paste URLs and press Enter" onkeydown="handleTagInput(event, 'refDocsTags')">
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="goToStep(4)">&larr; Back</button>
+              <div class="btn-group-right">
+                <button class="btn btn-primary" onclick="generateAndGoToStep6()">Generate Prompt &rarr;</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 6: Generated Output -->
+        <div class="wizard-panel" data-step="6">
+          <div class="panel-card">
+            <h2>Step 6: Your Generated Prompt</h2>
+            <p class="panel-desc">Review, enhance, and use your standardized Devin prompt.</p>
+
+            <!-- AI Enhancement Config -->
+            <div class="api-config">
+              <h3>AI Enhancement (Optional)</h3>
+              <p class="api-desc">Provide an API key to have AI refine and improve the generated prompt. Your key stays in the browser — it is never stored on any server.</p>
+              <div class="api-tabs">
+                <button class="api-tab active" onclick="setAIProvider('openai', this)">OpenAI</button>
+                <button class="api-tab" onclick="setAIProvider('anthropic', this)">Anthropic</button>
+              </div>
+              <div class="api-key-input">
+                <input type="password" id="aiApiKey" placeholder="Paste your API key here (sk-...)">
+                <button class="btn btn-outline" onclick="enhanceWithAI()" id="enhanceBtn">Enhance with AI</button>
+              </div>
+            </div>
+
+            <!-- Send to Devin Config -->
+            <div class="api-config">
+              <h3>Send to Devin (Optional)</h3>
+              <p class="api-desc">Create a Devin session directly with this prompt. Requires your Devin API key and Org ID.</p>
+              <div class="form-row">
+                <div class="api-key-input" style="flex:1;">
+                  <input type="password" id="devinApiKey" placeholder="Devin API key">
+                </div>
+                <div class="api-key-input" style="flex:1;">
+                  <input type="text" id="devinOrgId" placeholder="Org ID (e.g., org-abc123)">
+                </div>
+              </div>
+              <div style="margin-top:0.8rem;">
+                <button class="btn btn-success" onclick="sendToDevin()" id="sendDevinBtn">Send to Devin</button>
+              </div>
+            </div>
+
+            <!-- Output -->
+            <div class="output-container">
+              <div class="output-box" id="outputBox">Your prompt will appear here after generation...</div>
+              <div class="output-actions">
+                <button class="btn btn-primary" onclick="copyPrompt()">Copy to Clipboard</button>
+                <button class="btn btn-outline" onclick="downloadPrompt()">Download as .txt</button>
+                <button class="btn btn-secondary" onclick="goToStep(1)">Start Over</button>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="goToStep(5)">&larr; Back to Edit</button>
+              <div></div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Live Preview Sidebar -->
+      <div class="live-preview" id="livePreview">
+        <h3>Live Preview</h3>
+        <div class="preview-content" id="previewContent">Fill in the form to see a live preview of your prompt...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toggle preview FAB -->
+  <button class="toggle-preview-btn" onclick="togglePreview()" title="Toggle live preview">&#128065;</button>
+
+  <!-- Save Preset Modal -->
+  <div class="modal-overlay" id="savePresetModal">
+    <div class="modal">
+      <h3>Save Preset</h3>
+      <div class="form-group">
+        <label>Preset Name <span class="required">*</span></label>
+        <input type="text" id="presetName" placeholder="e.g., Claims Team Standard">
+      </div>
+      <div class="btn-group">
+        <button class="btn btn-secondary" onclick="closeSavePresetModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="savePreset()">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <footer>
+    <p>Devin AI Prompt Generator &mdash; Built for Insurance Engineering Teams &mdash; <a href="index.html">Back to Devin Wiki</a></p>
+  </footer>
+
+<script>
+// ============================================================
+// INSURANCE TEMPLATES
+// ============================================================
+const INSURANCE_TEMPLATES = [
+  {
+    id: 'claims',
+    icon: '\uD83D\uDCCB',
+    name: 'Claims Processing',
+    desc: 'HIPAA, SOC 2, PCI-DSS, audit logging, encryption',
+    data: {
+      projectType: 'api-integration',
+      targetSystem: 'microservice',
+      standards: ['soc2', 'hipaa', 'pci-dss', 'encryption', 'rbac', 'unit-tests', 'integration-tests', 'code-review', 'linting', 'error-handling', 'logging', 'audit-trail', 'monitoring'],
+      languages: ['Java', 'SQL'],
+      frameworks: ['Spring Boot', 'Spring Security'],
+      databases: ['PostgreSQL', 'Redis'],
+      customRules: '- All claim data must be encrypted at rest and in transit\n- PII fields must be masked in all log output\n- Claim status transitions must follow the state machine defined in CLAIMS_STATE_DIAGRAM.md\n- All monetary calculations must use BigDecimal (never floating point)\n- Audit log every claim status change with user, timestamp, and reason'
+    }
+  },
+  {
+    id: 'policy',
+    icon: '\uD83D\uDCC4',
+    name: 'Policy Administration',
+    desc: 'Versioned APIs, regulatory compliance, data validation',
+    data: {
+      projectType: 'new-feature',
+      targetSystem: 'rest-api',
+      standards: ['soc2', 'naic', 'gdpr-ccpa', 'unit-tests', 'integration-tests', 'code-review', 'linting', 'type-safety', 'error-handling', 'api-docs', 'logging', 'audit-trail'],
+      languages: ['Java', 'TypeScript'],
+      frameworks: ['Spring Boot', 'React'],
+      databases: ['Oracle', 'Elasticsearch'],
+      customRules: '- All API endpoints must be versioned (e.g., /api/v1/policies)\n- Policy effective dates must be validated against state regulatory calendars\n- Premium calculations must be reproducible and auditable\n- Support multi-state regulatory rules via configuration (not code branching)\n- Database migrations must be reversible'
+    }
+  },
+  {
+    id: 'underwriting',
+    icon: '\uD83D\uDCCA',
+    name: 'Underwriting Platform',
+    desc: 'Rate calculation accuracy, model governance, data integrity',
+    data: {
+      projectType: 'new-feature',
+      targetSystem: 'web-app',
+      standards: ['soc2', 'naic', 'unit-tests', 'integration-tests', 'code-review', 'linting', 'type-safety', 'error-handling', 'api-docs', 'inline-docs', 'logging', 'audit-trail', 'monitoring'],
+      languages: ['Python', 'TypeScript', 'SQL'],
+      frameworks: ['FastAPI', 'React', 'Pandas'],
+      databases: ['PostgreSQL', 'Snowflake'],
+      customRules: '- All actuarial models must have version tracking and rollback capability\n- Rate calculations must be deterministic and reproducible\n- Model inputs and outputs must be logged for audit purposes\n- Risk scoring algorithms must be documented with mathematical notation\n- No hardcoded rate factors — use configuration tables'
+    }
+  },
+  {
+    id: 'portal',
+    icon: '\uD83C\uDF10',
+    name: 'Customer Portal',
+    desc: 'WCAG 2.1, OWASP Top 10, session management, XSS/CSRF',
+    data: {
+      projectType: 'customer-portal',
+      targetSystem: 'web-app',
+      standards: ['soc2', 'owasp', 'gdpr-ccpa', 'encryption', 'rbac', 'unit-tests', 'integration-tests', 'code-review', 'linting', 'type-safety', 'error-handling', 'accessibility', 'logging', 'monitoring'],
+      languages: ['TypeScript', 'CSS', 'HTML'],
+      frameworks: ['React', 'Next.js', 'Tailwind CSS'],
+      databases: ['PostgreSQL'],
+      customRules: '- All forms must have client-side AND server-side validation\n- Session timeout must be configurable (default: 15 minutes idle)\n- Implement CSP headers and SRI for all external scripts\n- All user inputs must be sanitized against XSS\n- CSRF tokens required for all state-changing requests\n- Support for screen readers and keyboard-only navigation'
+    }
+  },
+  {
+    id: 'internal',
+    icon: '\uD83D\uDD27',
+    name: 'Internal Tooling',
+    desc: 'SSO/LDAP, audit trails, least-privilege access',
+    data: {
+      projectType: 'internal-tool',
+      targetSystem: 'web-app',
+      standards: ['soc2', 'rbac', 'unit-tests', 'code-review', 'linting', 'error-handling', 'logging', 'audit-trail'],
+      languages: ['TypeScript', 'Python'],
+      frameworks: ['React', 'Express'],
+      databases: ['PostgreSQL'],
+      customRules: '- Must integrate with corporate SSO (SAML 2.0 / OIDC)\n- All admin actions must be logged to the audit trail\n- Role-based access with least-privilege principle\n- Internal APIs must use service-to-service auth tokens\n- Data export features must respect data classification levels'
+    }
+  }
+];
+
+// ============================================================
+// STANDARDS DESCRIPTIONS (for prompt generation)
+// ============================================================
+const STANDARDS_MAP = {
+  'soc2':              'SOC 2 Type II: Implement controls for data security, availability, processing integrity, confidentiality, and privacy. All data access must be logged and auditable.',
+  'hipaa':             'HIPAA: Protect all Protected Health Information (PHI). Implement access controls, encryption, audit trails, and ensure minimum necessary data exposure.',
+  'pci-dss':           'PCI-DSS: Secure all payment card data. Implement tokenization, encryption, network segmentation, and regular vulnerability scanning.',
+  'owasp':             'OWASP Top 10: Guard against injection, broken authentication, XSS, CSRF, insecure deserialization, security misconfiguration, and other OWASP risks.',
+  'naic':              'NAIC Model Laws: Comply with National Association of Insurance Commissioners regulations including data security model law and insurance data security standards.',
+  'gdpr-ccpa':         'GDPR/CCPA: Implement data subject rights (access, deletion, portability), consent management, data minimization, and privacy by design.',
+  'encryption':        'Encryption: Use AES-256 for data at rest, TLS 1.2+ for data in transit. Never store encryption keys alongside encrypted data.',
+  'rbac':              'Role-Based Access Control: Implement least-privilege access. Define clear roles and permissions. No hardcoded credentials.',
+  'unit-tests':        'Unit Tests: Write comprehensive unit tests. Maintain minimum 80% code coverage. Tests must be deterministic and fast.',
+  'integration-tests': 'Integration Tests: Write integration tests for all API endpoints and service boundaries. Test with realistic data scenarios.',
+  'code-review':       'Code Review: All changes require minimum 2 peer approvals before merge. Use pull request templates with checklists.',
+  'linting':           'Static Analysis: Configure and enforce linting rules (ESLint/Checkstyle/Pylint). Zero warnings policy on new code.',
+  'type-safety':       'Type Safety: Use strong typing throughout. No implicit any types. Enable strict mode in TypeScript/compiler settings.',
+  'error-handling':    'Error Handling: Use structured error responses with error codes. No silent catch blocks. Implement global error boundaries.',
+  'api-docs':          'API Documentation: Generate OpenAPI/Swagger specs for all endpoints. Keep documentation in sync with implementation.',
+  'inline-docs':       'Inline Documentation: Add JSDoc/Javadoc/docstrings to all public interfaces. Document complex business logic inline.',
+  'logging':           'Structured Logging: Use JSON-formatted logs with correlation IDs. Log levels: DEBUG, INFO, WARN, ERROR. Never log PII or secrets.',
+  'audit-trail':       'Audit Trail: Log all data access and mutations with user identity, timestamp, action, and affected records. Audit logs must be immutable.',
+  'accessibility':     'Accessibility (WCAG 2.1 AA): Ensure keyboard navigation, screen reader support, sufficient color contrast (4.5:1), focus indicators, and ARIA labels.',
+  'monitoring':        'Health Checks: Implement /health and /ready endpoints. Add application metrics, uptime monitoring, and alerting.',
+};
+
+// ============================================================
+// STATE
+// ============================================================
+let currentStep = 1;
+const TOTAL_STEPS = 6;
+let showPreview = false;
+let aiProvider = 'openai';
+
+// ============================================================
+// INITIALIZATION
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  renderTemplateGrid();
+  renderWizardProgress();
+  createParticles();
+  loadPresetsDropdown();
+  updatePreview();
+
+  // Listen for form changes to update preview
+  document.querySelectorAll('input, select, textarea').forEach(el => {
+    el.addEventListener('input', updatePreview);
+    el.addEventListener('change', updatePreview);
+  });
+});
+
+// ============================================================
+// PARTICLES (matching index.html)
+// ============================================================
+function createParticles() {
+  const container = document.getElementById('particles');
+  for (let i = 0; i < 40; i++) {
+    const span = document.createElement('span');
+    span.style.left = Math.random() * 100 + '%';
+    span.style.animationDuration = (8 + Math.random() * 15) + 's';
+    span.style.animationDelay = Math.random() * 10 + 's';
+    span.style.width = span.style.height = (2 + Math.random() * 4) + 'px';
+    container.appendChild(span);
+  }
+}
+
+// ============================================================
+// TEMPLATE GRID
+// ============================================================
+function renderTemplateGrid() {
+  const grid = document.getElementById('templateGrid');
+  grid.innerHTML = INSURANCE_TEMPLATES.map(t => `
+    <div class="template-card" data-id="${t.id}" onclick="applyTemplate('${t.id}')">
+      <div class="tmpl-icon">${t.icon}</div>
+      <div class="tmpl-name">${t.name}</div>
+      <div class="tmpl-desc">${t.desc}</div>
+    </div>
+  `).join('');
+}
+
+function applyTemplate(id) {
+  const tmpl = INSURANCE_TEMPLATES.find(t => t.id === id);
+  if (!tmpl) return;
+
+  // Highlight selected
+  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
+  document.querySelector(`.template-card[data-id="${id}"]`).classList.add('selected');
+
+  const d = tmpl.data;
+
+  // Set selects
+  if (d.projectType) document.getElementById('projectType').value = d.projectType;
+  if (d.targetSystem) document.getElementById('targetSystem').value = d.targetSystem;
+
+  // Set standards checkboxes
+  document.querySelectorAll('input[name="standards"]').forEach(cb => {
+    const item = cb.closest('.checkbox-item');
+    if (d.standards.includes(cb.value)) {
+      cb.checked = true;
+      item.classList.add('checked');
+    } else {
+      cb.checked = false;
+      item.classList.remove('checked');
+    }
+  });
+
+  // Set tags
+  setTags('languagesTags', d.languages || []);
+  setTags('frameworksTags', d.frameworks || []);
+  setTags('databaseTags', d.databases || []);
+
+  // Custom rules
+  if (d.customRules) document.getElementById('customRules').value = d.customRules;
+
+  updatePreview();
+  showToast(`"${tmpl.name}" template applied!`, 'success');
+}
+
+// ============================================================
+// WIZARD PROGRESS
+// ============================================================
+function renderWizardProgress() {
+  const container = document.getElementById('wizardProgress');
+  const labels = ['Project', 'Role', 'Tech', 'Standards', 'Rules', 'Output'];
+  let html = '';
+  for (let i = 1; i <= TOTAL_STEPS; i++) {
+    html += `<div class="wizard-step-indicator">
+      <div class="step-dot${i === currentStep ? ' active' : ''}" data-step="${i}" onclick="goToStep(${i})">
+        ${i}
+        <span class="step-label">${labels[i-1]}</span>
+      </div>
+    </div>`;
+    if (i < TOTAL_STEPS) {
+      html += `<div class="step-connector" data-after="${i}"></div>`;
+    }
+  }
+  container.innerHTML = html;
+}
+
+function updateWizardProgress() {
+  document.querySelectorAll('.step-dot').forEach(dot => {
+    const step = parseInt(dot.dataset.step);
+    dot.classList.remove('active', 'completed');
+    if (step === currentStep) dot.classList.add('active');
+    else if (step < currentStep) dot.classList.add('completed');
+  });
+  document.querySelectorAll('.step-connector').forEach(conn => {
+    const afterStep = parseInt(conn.dataset.after);
+    conn.classList.toggle('completed', afterStep < currentStep);
+  });
+}
+
+function goToStep(step) {
+  if (step < 1 || step > TOTAL_STEPS) return;
+  currentStep = step;
+  document.querySelectorAll('.wizard-panel').forEach(p => p.classList.remove('active'));
+  document.querySelector(`.wizard-panel[data-step="${step}"]`).classList.add('active');
+  updateWizardProgress();
+  window.scrollTo({ top: 200, behavior: 'smooth' });
+}
+
+function generateAndGoToStep6() {
+  generatePrompt();
+  goToStep(6);
+}
+
+// ============================================================
+// TAGS INPUT
+// ============================================================
+function handleTagInput(e, containerId) {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const input = e.target;
+    const value = input.value.trim().replace(/,$/, '');
+    if (!value) return;
+
+    addTag(containerId, value);
+    input.value = '';
+    updatePreview();
+  }
+}
+
+function addTag(containerId, value) {
+  const container = document.getElementById(containerId);
+  const input = container.querySelector('input');
+
+  // Prevent duplicates
+  const existing = getTags(containerId);
+  if (existing.includes(value)) return;
+
+  const tag = document.createElement('span');
+  tag.className = 'tag';
+  tag.innerHTML = `${value} <span class="tag-remove" onclick="removeTag(this, '${containerId}')">&times;</span>`;
+  container.insertBefore(tag, input);
+}
+
+function removeTag(el, containerId) {
+  el.parentElement.remove();
+  updatePreview();
+}
+
+function getTags(containerId) {
+  const container = document.getElementById(containerId);
+  return Array.from(container.querySelectorAll('.tag')).map(t =>
+    t.textContent.replace('\u00d7', '').trim()
+  );
+}
+
+function setTags(containerId, values) {
+  const container = document.getElementById(containerId);
+  container.querySelectorAll('.tag').forEach(t => t.remove());
+  values.forEach(v => addTag(containerId, v));
+}
+
+// ============================================================
+// CHECKBOX TOGGLE
+// ============================================================
+function toggleCheck(item) {
+  const cb = item.querySelector('input[type="checkbox"]');
+  cb.checked = !cb.checked;
+  item.classList.toggle('checked', cb.checked);
+  updatePreview();
+}
+
+// ============================================================
+// COLLECT FORM DATA
+// ============================================================
+function collectFormData() {
+  return {
+    projectName: document.getElementById('projectName').value.trim(),
+    projectType: document.getElementById('projectType').value,
+    projectDescription: document.getElementById('projectDescription').value.trim(),
+    targetSystem: document.getElementById('targetSystem').value,
+    repoUrl: document.getElementById('repoUrl').value.trim(),
+    userRole: document.getElementById('userRole').value,
+    teamName: document.getElementById('teamName').value.trim(),
+    branchConvention: document.getElementById('branchConvention').value.trim(),
+    commitFormat: document.getElementById('commitFormat').value.trim(),
+    languages: getTags('languagesTags'),
+    frameworks: getTags('frameworksTags'),
+    databases: getTags('databaseTags'),
+    cloudProvider: document.getElementById('cloudProvider').value,
+    cicdTools: getTags('cicdTags'),
+    standards: Array.from(document.querySelectorAll('input[name="standards"]:checked')).map(cb => cb.value),
+    customRules: document.getElementById('customRules').value.trim(),
+    excludedPatterns: document.getElementById('excludedPatterns').value.trim(),
+    refDocs: getTags('refDocsTags'),
+  };
+}
+
+// ============================================================
+// PROMPT GENERATION
+// ============================================================
+function generatePrompt() {
+  const data = collectFormData();
+  const prompt = buildPrompt(data);
+  document.getElementById('outputBox').textContent = prompt;
+}
+
+function buildPrompt(data) {
+  const sections = [];
+
+  // --- Header ---
+  sections.push('='.repeat(60));
+  sections.push('DEVIN AI — PROJECT PROMPT');
+  sections.push('Generated by Insurance Engineering Prompt Generator');
+  sections.push('='.repeat(60));
+  sections.push('');
+
+  // --- Role Context ---
+  if (data.userRole || data.teamName) {
+    const roleName = data.userRole ? document.getElementById('userRole').querySelector(`option[value="${data.userRole}"]`).textContent : 'Engineer';
+    sections.push('## ROLE CONTEXT');
+    sections.push(`You are assisting a ${roleName}${data.teamName ? ` on the ${data.teamName} team` : ''} at a large US insurance company.`);
+    sections.push(`All work must comply with enterprise standards and regulatory requirements applicable to the insurance industry.`);
+    sections.push('');
+  }
+
+  // --- Project Scope ---
+  sections.push('## PROJECT SCOPE');
+  if (data.projectName) sections.push(`**Project:** ${data.projectName}`);
+  if (data.projectType) {
+    const typeName = document.getElementById('projectType').querySelector(`option[value="${data.projectType}"]`).textContent;
+    sections.push(`**Type:** ${typeName}`);
+  }
+  if (data.targetSystem) {
+    const sysName = document.getElementById('targetSystem').querySelector(`option[value="${data.targetSystem}"]`).textContent;
+    sections.push(`**Target System:** ${sysName}`);
+  }
+  if (data.repoUrl) sections.push(`**Repository:** ${data.repoUrl}`);
+  sections.push('');
+  if (data.projectDescription) {
+    sections.push('**Description:**');
+    sections.push(data.projectDescription);
+    sections.push('');
+  }
+
+  // --- Tech Stack ---
+  if (data.languages.length || data.frameworks.length || data.databases.length || data.cloudProvider || data.cicdTools.length) {
+    sections.push('## TECHNOLOGY CONSTRAINTS');
+    if (data.languages.length) sections.push(`**Languages:** ${data.languages.join(', ')}`);
+    if (data.frameworks.length) sections.push(`**Frameworks:** ${data.frameworks.join(', ')}`);
+    if (data.databases.length) sections.push(`**Databases:** ${data.databases.join(', ')}`);
+    if (data.cloudProvider) {
+      const cloudName = document.getElementById('cloudProvider').querySelector(`option[value="${data.cloudProvider}"]`).textContent;
+      sections.push(`**Cloud/Infrastructure:** ${cloudName}`);
+    }
+    if (data.cicdTools.length) sections.push(`**CI/CD Tools:** ${data.cicdTools.join(', ')}`);
+    sections.push('');
+    sections.push('Use ONLY the technologies listed above. Do not introduce additional frameworks or libraries without explicit approval.');
+    sections.push('');
+  }
+
+  // --- Git Workflow ---
+  if (data.branchConvention || data.commitFormat) {
+    sections.push('## GIT WORKFLOW');
+    if (data.branchConvention) sections.push(`**Branch naming:** ${data.branchConvention}`);
+    if (data.commitFormat) sections.push(`**Commit format:** ${data.commitFormat}`);
+    sections.push('');
+  }
+
+  // --- Compliance & Standards ---
+  if (data.standards.length) {
+    sections.push('## MANDATORY STANDARDS & COMPLIANCE');
+    sections.push('The following standards are MANDATORY. All code must comply with these requirements:');
+    sections.push('');
+    data.standards.forEach((s, i) => {
+      if (STANDARDS_MAP[s]) {
+        sections.push(`${i + 1}. ${STANDARDS_MAP[s]}`);
+      }
+    });
+    sections.push('');
+  }
+
+  // --- Custom Rules ---
+  if (data.customRules) {
+    sections.push('## ADDITIONAL RULES');
+    sections.push(data.customRules);
+    sections.push('');
+  }
+
+  // --- Excluded Patterns ---
+  if (data.excludedPatterns) {
+    sections.push('## DO NOT:');
+    sections.push(data.excludedPatterns);
+    sections.push('');
+  }
+
+  // --- Reference Docs ---
+  if (data.refDocs.length) {
+    sections.push('## REFERENCE DOCUMENTATION');
+    data.refDocs.forEach(url => sections.push(`- ${url}`));
+    sections.push('');
+  }
+
+  // --- Quality Checklist ---
+  sections.push('## QUALITY CHECKLIST (verify before submitting)');
+  sections.push('Before marking the task as complete, ensure:');
+  const checklist = [];
+  if (data.standards.includes('unit-tests')) checklist.push('[ ] Unit tests written with >= 80% coverage');
+  if (data.standards.includes('integration-tests')) checklist.push('[ ] Integration tests cover all API endpoints');
+  if (data.standards.includes('linting')) checklist.push('[ ] Code passes all linting/static analysis rules');
+  if (data.standards.includes('type-safety')) checklist.push('[ ] No type errors (strict mode)');
+  if (data.standards.includes('api-docs')) checklist.push('[ ] API documentation (OpenAPI) is up to date');
+  if (data.standards.includes('inline-docs')) checklist.push('[ ] Public interfaces have inline documentation');
+  if (data.standards.includes('accessibility')) checklist.push('[ ] Accessibility audit passes (WCAG 2.1 AA)');
+  if (data.standards.includes('monitoring')) checklist.push('[ ] Health check endpoints implemented');
+  if (data.standards.includes('logging')) checklist.push('[ ] Structured logging in place with correlation IDs');
+  if (data.standards.includes('audit-trail')) checklist.push('[ ] Audit trail logs all data mutations');
+  if (data.standards.includes('encryption')) checklist.push('[ ] Encryption at rest and in transit verified');
+  checklist.push('[ ] No secrets or credentials in code');
+  checklist.push('[ ] PR follows branch naming and commit format conventions');
+  checklist.push('[ ] Code reviewed per team policy');
+  sections.push(checklist.join('\n'));
+  sections.push('');
+
+  sections.push('='.repeat(60));
+
+  return sections.join('\n');
+}
+
+// ============================================================
+// LIVE PREVIEW
+// ============================================================
+function updatePreview() {
+  const data = collectFormData();
+  const prompt = buildPrompt(data);
+  document.getElementById('previewContent').textContent = prompt;
+}
+
+function togglePreview() {
+  showPreview = !showPreview;
+  const preview = document.getElementById('livePreview');
+  const layout = document.getElementById('layoutSplit');
+  preview.classList.toggle('visible', showPreview);
+  layout.classList.toggle('show-preview', showPreview);
+  if (showPreview) updatePreview();
+}
+
+// ============================================================
+// COPY & DOWNLOAD
+// ============================================================
+function copyPrompt() {
+  const text = document.getElementById('outputBox').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('Prompt copied to clipboard!', 'success');
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Prompt copied to clipboard!', 'success');
+  });
+}
+
+function downloadPrompt() {
+  const text = document.getElementById('outputBox').textContent;
+  const projectName = document.getElementById('projectName').value.trim() || 'devin-prompt';
+  const filename = projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-prompt.txt';
+
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('Prompt downloaded!', 'success');
+}
+
+// ============================================================
+// AI ENHANCEMENT
+// ============================================================
+function setAIProvider(provider, btn) {
+  aiProvider = provider;
+  document.querySelectorAll('.api-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const placeholder = provider === 'openai' ? 'Paste your API key here (sk-...)' : 'Paste your API key here (sk-ant-...)';
+  document.getElementById('aiApiKey').placeholder = placeholder;
+}
+
+async function enhanceWithAI() {
+  const apiKey = document.getElementById('aiApiKey').value.trim();
+  if (!apiKey) {
+    showToast('Please enter your API key first.', 'error');
+    return;
+  }
+
+  const currentPrompt = document.getElementById('outputBox').textContent;
+  if (!currentPrompt || currentPrompt === 'Your prompt will appear here after generation...') {
+    showToast('Generate a prompt first before enhancing.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('enhanceBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Enhancing...';
+
+  try {
+    let enhanced;
+    if (aiProvider === 'openai') {
+      enhanced = await callOpenAI(apiKey, currentPrompt);
+    } else {
+      enhanced = await callAnthropic(apiKey, currentPrompt);
+    }
+    document.getElementById('outputBox').textContent = enhanced;
+    showToast('Prompt enhanced with AI!', 'success');
+  } catch (err) {
+    showToast(`AI enhancement failed: ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Enhance with AI';
+  }
+}
+
+async function callOpenAI(apiKey, prompt) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are an expert at writing prompts for AI coding assistants. Your job is to take a generated project prompt and improve it: make the instructions clearer, more specific, better structured, and add any missing best practices relevant to the insurance industry. Keep the same overall structure but enhance the language, add specificity, and ensure nothing important is missing. Return ONLY the improved prompt text, nothing else.'
+        },
+        {
+          role: 'user',
+          content: `Please enhance this Devin AI project prompt. Make it more specific, clearer, and ensure it covers all necessary insurance industry standards:\n\n${prompt}`
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 4000
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `OpenAI API returned ${response.status}`);
+  }
+
+  const result = await response.json();
+  return result.choices[0].message.content;
+}
+
+async function callAnthropic(apiKey, prompt) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      messages: [
+        {
+          role: 'user',
+          content: `You are an expert at writing prompts for AI coding assistants. Take the following generated project prompt and improve it: make the instructions clearer, more specific, better structured, and add any missing best practices relevant to the insurance industry. Keep the same overall structure but enhance the language, add specificity, and ensure nothing important is missing. Return ONLY the improved prompt text, nothing else.\n\n${prompt}`
+        }
+      ]
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `Anthropic API returned ${response.status}`);
+  }
+
+  const result = await response.json();
+  return result.content[0].text;
+}
+
+// ============================================================
+// SEND TO DEVIN
+// ============================================================
+async function sendToDevin() {
+  const apiKey = document.getElementById('devinApiKey').value.trim();
+  const orgId = document.getElementById('devinOrgId').value.trim();
+
+  if (!apiKey || !orgId) {
+    showToast('Please enter both your Devin API key and Org ID.', 'error');
+    return;
+  }
+
+  const currentPrompt = document.getElementById('outputBox').textContent;
+  if (!currentPrompt || currentPrompt === 'Your prompt will appear here after generation...') {
+    showToast('Generate a prompt first before sending to Devin.', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('sendDevinBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span> Creating session...';
+
+  try {
+    const response = await fetch(`https://api.devin.ai/v3/organizations/${orgId}/sessions`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        prompt: currentPrompt
+      })
+    });
+
+    if (!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.message || err.detail || `Devin API returned ${response.status}`);
+    }
+
+    const result = await response.json();
+    const sessionUrl = result.url || `https://app.devin.ai/sessions/${result.session_id}`;
+    showToast('Devin session created! Opening...', 'success');
+    window.open(sessionUrl, '_blank');
+  } catch (err) {
+    showToast(`Failed to create Devin session: ${err.message}`, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Send to Devin';
+  }
+}
+
+// ============================================================
+// PRESETS (localStorage)
+// ============================================================
+function getPresets() {
+  try {
+    return JSON.parse(localStorage.getItem('devinPromptPresets') || '{}');
+  } catch { return {}; }
+}
+
+function savePresets(presets) {
+  localStorage.setItem('devinPromptPresets', JSON.stringify(presets));
+}
+
+function loadPresetsDropdown() {
+  const select = document.getElementById('presetSelect');
+  const presets = getPresets();
+  // Keep the first default option
+  select.innerHTML = '<option value="">-- Select a saved preset --</option>';
+  Object.keys(presets).forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    select.appendChild(opt);
+  });
+}
+
+function openSavePresetModal() {
+  document.getElementById('savePresetModal').classList.add('show');
+  document.getElementById('presetName').value = '';
+  document.getElementById('presetName').focus();
+}
+
+function closeSavePresetModal() {
+  document.getElementById('savePresetModal').classList.remove('show');
+}
+
+function savePreset() {
+  const name = document.getElementById('presetName').value.trim();
+  if (!name) {
+    showToast('Please enter a preset name.', 'error');
+    return;
+  }
+
+  const data = collectFormData();
+  const presets = getPresets();
+  presets[name] = data;
+  savePresets(presets);
+  loadPresetsDropdown();
+  document.getElementById('presetSelect').value = name;
+  closeSavePresetModal();
+  showToast(`Preset "${name}" saved!`, 'success');
+}
+
+function loadPreset() {
+  const name = document.getElementById('presetSelect').value;
+  if (!name) {
+    showToast('Select a preset first.', 'error');
+    return;
+  }
+
+  const presets = getPresets();
+  const data = presets[name];
+  if (!data) return;
+
+  // Restore form fields
+  document.getElementById('projectName').value = data.projectName || '';
+  document.getElementById('projectType').value = data.projectType || '';
+  document.getElementById('projectDescription').value = data.projectDescription || '';
+  document.getElementById('targetSystem').value = data.targetSystem || '';
+  document.getElementById('repoUrl').value = data.repoUrl || '';
+  document.getElementById('userRole').value = data.userRole || '';
+  document.getElementById('teamName').value = data.teamName || '';
+  document.getElementById('branchConvention').value = data.branchConvention || '';
+  document.getElementById('commitFormat').value = data.commitFormat || '';
+  document.getElementById('cloudProvider').value = data.cloudProvider || '';
+  document.getElementById('customRules').value = data.customRules || '';
+  document.getElementById('excludedPatterns').value = data.excludedPatterns || '';
+
+  // Restore tags
+  setTags('languagesTags', data.languages || []);
+  setTags('frameworksTags', data.frameworks || []);
+  setTags('databaseTags', data.databases || []);
+  setTags('cicdTags', data.cicdTools || []);
+  setTags('refDocsTags', data.refDocs || []);
+
+  // Restore checkboxes
+  document.querySelectorAll('input[name="standards"]').forEach(cb => {
+    const item = cb.closest('.checkbox-item');
+    if ((data.standards || []).includes(cb.value)) {
+      cb.checked = true;
+      item.classList.add('checked');
+    } else {
+      cb.checked = false;
+      item.classList.remove('checked');
+    }
+  });
+
+  updatePreview();
+  showToast(`Preset "${name}" loaded!`, 'success');
+}
+
+function deletePreset() {
+  const name = document.getElementById('presetSelect').value;
+  if (!name) {
+    showToast('Select a preset to delete.', 'error');
+    return;
+  }
+  if (!confirm(`Delete preset "${name}"?`)) return;
+
+  const presets = getPresets();
+  delete presets[name];
+  savePresets(presets);
+  loadPresetsDropdown();
+  showToast(`Preset "${name}" deleted.`, 'info');
+}
+
+// ============================================================
+// TOAST NOTIFICATIONS
+// ============================================================
+function showToast(message, type = 'info') {
+  const toast = document.getElementById('toast');
+  toast.textContent = message;
+  toast.className = `toast toast-${type} show`;
+  setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// NAV TOGGLE (mobile)
+// ============================================================
+document.getElementById('navToggle').addEventListener('click', () => {
+  document.getElementById('navMenu').classList.toggle('open');
+});
+</script>
+</body>
+</html>
