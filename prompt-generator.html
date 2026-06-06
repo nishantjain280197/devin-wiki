@@ -323,31 +323,7 @@
       color: var(--text-muted);
     }
 
-    /* ========== TEMPLATE SELECTOR ========== */
-    .template-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1rem;
-      margin-bottom: 2rem;
-    }
-    .template-card {
-      background: rgba(255,255,255,.03);
-      border: 2px solid rgba(108,99,255,.12);
-      border-radius: var(--card-radius);
-      padding: 1.5rem;
-      cursor: pointer;
-      transition: var(--transition);
-      text-align: center;
-    }
-    .template-card:hover { border-color: rgba(108,99,255,.4); transform: translateY(-2px); }
-    .template-card.selected {
-      border-color: var(--accent);
-      background: rgba(108,99,255,.08);
-      box-shadow: 0 0 20px var(--accent-glow);
-    }
-    .template-card .tmpl-icon { font-size: 2rem; margin-bottom: 0.6rem; }
-    .template-card .tmpl-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 0.3rem; }
-    .template-card .tmpl-desc { font-size: 0.78rem; color: var(--text-muted); }
+
 
     /* ========== TAGS INPUT ========== */
     .tags-container {
@@ -747,14 +723,7 @@
       <button class="btn btn-danger" onclick="deletePreset()" title="Delete selected preset" style="padding: 0.5rem 1rem; font-size: 0.85rem;">Delete</button>
     </div>
 
-    <!-- Template Quick-Start -->
-    <div class="panel-card" style="margin-bottom: 2rem;">
-      <h2>Quick Start: Insurance Templates</h2>
-      <p class="panel-desc">Select a template to pre-fill standards and protocols for common insurance project types.</p>
-      <div class="template-grid" id="templateGrid">
-        <!-- Templates injected by JS -->
-      </div>
-    </div>
+
 
     <!-- Wizard Progress -->
     <div class="wizard-progress" id="wizardProgress">
@@ -1187,86 +1156,6 @@
   </footer>
 
 <script>
-// ============================================================
-// INSURANCE TEMPLATES
-// ============================================================
-const INSURANCE_TEMPLATES = [
-  {
-    id: 'claims',
-    icon: '\uD83D\uDCCB',
-    name: 'Claims Processing',
-    desc: 'HIPAA, SOC 2, PCI-DSS, audit logging, encryption',
-    data: {
-      projectType: 'api-integration',
-      targetSystem: 'microservice',
-      standards: ['soc2', 'hipaa', 'pci-dss', 'encryption', 'rbac', 'unit-tests', 'integration-tests', 'code-review', 'linting', 'error-handling', 'logging', 'audit-trail', 'monitoring'],
-      languages: ['Java', 'SQL'],
-      frameworks: ['Spring Boot', 'Spring Security'],
-      databases: ['PostgreSQL', 'Redis'],
-      customRules: '- All claim data must be encrypted at rest and in transit\n- PII fields must be masked in all log output\n- Claim status transitions must follow the state machine defined in CLAIMS_STATE_DIAGRAM.md\n- All monetary calculations must use BigDecimal (never floating point)\n- Audit log every claim status change with user, timestamp, and reason'
-    }
-  },
-  {
-    id: 'policy',
-    icon: '\uD83D\uDCC4',
-    name: 'Policy Administration',
-    desc: 'Versioned APIs, regulatory compliance, data validation',
-    data: {
-      projectType: 'new-feature',
-      targetSystem: 'rest-api',
-      standards: ['soc2', 'naic', 'gdpr-ccpa', 'unit-tests', 'integration-tests', 'code-review', 'linting', 'type-safety', 'error-handling', 'api-docs', 'logging', 'audit-trail'],
-      languages: ['Java', 'TypeScript'],
-      frameworks: ['Spring Boot', 'React'],
-      databases: ['Oracle', 'Elasticsearch'],
-      customRules: '- All API endpoints must be versioned (e.g., /api/v1/policies)\n- Policy effective dates must be validated against state regulatory calendars\n- Premium calculations must be reproducible and auditable\n- Support multi-state regulatory rules via configuration (not code branching)\n- Database migrations must be reversible'
-    }
-  },
-  {
-    id: 'underwriting',
-    icon: '\uD83D\uDCCA',
-    name: 'Underwriting Platform',
-    desc: 'Rate calculation accuracy, model governance, data integrity',
-    data: {
-      projectType: 'new-feature',
-      targetSystem: 'web-app',
-      standards: ['soc2', 'naic', 'unit-tests', 'integration-tests', 'code-review', 'linting', 'type-safety', 'error-handling', 'api-docs', 'inline-docs', 'logging', 'audit-trail', 'monitoring'],
-      languages: ['Python', 'TypeScript', 'SQL'],
-      frameworks: ['FastAPI', 'React', 'Pandas'],
-      databases: ['PostgreSQL', 'Snowflake'],
-      customRules: '- All actuarial models must have version tracking and rollback capability\n- Rate calculations must be deterministic and reproducible\n- Model inputs and outputs must be logged for audit purposes\n- Risk scoring algorithms must be documented with mathematical notation\n- No hardcoded rate factors — use configuration tables'
-    }
-  },
-  {
-    id: 'portal',
-    icon: '\uD83C\uDF10',
-    name: 'Customer Portal',
-    desc: 'WCAG 2.1, OWASP Top 10, session management, XSS/CSRF',
-    data: {
-      projectType: 'customer-portal',
-      targetSystem: 'web-app',
-      standards: ['soc2', 'owasp', 'gdpr-ccpa', 'encryption', 'rbac', 'unit-tests', 'integration-tests', 'code-review', 'linting', 'type-safety', 'error-handling', 'accessibility', 'logging', 'monitoring'],
-      languages: ['TypeScript', 'CSS', 'HTML'],
-      frameworks: ['React', 'Next.js', 'Tailwind CSS'],
-      databases: ['PostgreSQL'],
-      customRules: '- All forms must have client-side AND server-side validation\n- Session timeout must be configurable (default: 15 minutes idle)\n- Implement CSP headers and SRI for all external scripts\n- All user inputs must be sanitized against XSS\n- CSRF tokens required for all state-changing requests\n- Support for screen readers and keyboard-only navigation'
-    }
-  },
-  {
-    id: 'internal',
-    icon: '\uD83D\uDD27',
-    name: 'Internal Tooling',
-    desc: 'SSO/LDAP, audit trails, least-privilege access',
-    data: {
-      projectType: 'internal-tool',
-      targetSystem: 'web-app',
-      standards: ['soc2', 'rbac', 'unit-tests', 'code-review', 'linting', 'error-handling', 'logging', 'audit-trail'],
-      languages: ['TypeScript', 'Python'],
-      frameworks: ['React', 'Express'],
-      databases: ['PostgreSQL'],
-      customRules: '- Must integrate with corporate SSO (SAML 2.0 / OIDC)\n- All admin actions must be logged to the audit trail\n- Role-based access with least-privilege principle\n- Internal APIs must use service-to-service auth tokens\n- Data export features must respect data classification levels'
-    }
-  }
-];
 
 // ============================================================
 // STANDARDS DESCRIPTIONS (for prompt generation)
@@ -1306,7 +1195,6 @@ let aiProvider = 'openai';
 // INITIALIZATION
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
-  renderTemplateGrid();
   renderWizardProgress();
   createParticles();
   loadPresetsDropdown();
@@ -1332,58 +1220,6 @@ function createParticles() {
     span.style.width = span.style.height = (2 + Math.random() * 4) + 'px';
     container.appendChild(span);
   }
-}
-
-// ============================================================
-// TEMPLATE GRID
-// ============================================================
-function renderTemplateGrid() {
-  const grid = document.getElementById('templateGrid');
-  grid.innerHTML = INSURANCE_TEMPLATES.map(t => `
-    <div class="template-card" data-id="${t.id}" onclick="applyTemplate('${t.id}')">
-      <div class="tmpl-icon">${t.icon}</div>
-      <div class="tmpl-name">${t.name}</div>
-      <div class="tmpl-desc">${t.desc}</div>
-    </div>
-  `).join('');
-}
-
-function applyTemplate(id) {
-  const tmpl = INSURANCE_TEMPLATES.find(t => t.id === id);
-  if (!tmpl) return;
-
-  // Highlight selected
-  document.querySelectorAll('.template-card').forEach(c => c.classList.remove('selected'));
-  document.querySelector(`.template-card[data-id="${id}"]`).classList.add('selected');
-
-  const d = tmpl.data;
-
-  // Set selects
-  if (d.projectType) document.getElementById('projectType').value = d.projectType;
-  if (d.targetSystem) document.getElementById('targetSystem').value = d.targetSystem;
-
-  // Set standards checkboxes
-  document.querySelectorAll('input[name="standards"]').forEach(cb => {
-    const item = cb.closest('.checkbox-item');
-    if (d.standards.includes(cb.value)) {
-      cb.checked = true;
-      item.classList.add('checked');
-    } else {
-      cb.checked = false;
-      item.classList.remove('checked');
-    }
-  });
-
-  // Set tags
-  setTags('languagesTags', d.languages || []);
-  setTags('frameworksTags', d.frameworks || []);
-  setTags('databaseTags', d.databases || []);
-
-  // Custom rules
-  if (d.customRules) document.getElementById('customRules').value = d.customRules;
-
-  updatePreview();
-  showToast(`"${tmpl.name}" template applied!`, 'success');
 }
 
 // ============================================================
