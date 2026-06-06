@@ -558,65 +558,7 @@
 
 
 
-    /* ========== LIVE PREVIEW SIDEBAR ========== */
-    .layout-split {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 2rem;
-    }
-    @media (min-width: 900px) {
-      .layout-split.show-preview {
-        grid-template-columns: 1fr 400px;
-      }
-    }
-    .live-preview {
-      position: sticky;
-      top: 80px;
-      background: var(--surface);
-      border: 1px solid rgba(108,99,255,.1);
-      border-radius: var(--card-radius);
-      padding: 1.5rem;
-      max-height: calc(100vh - 100px);
-      overflow-y: auto;
-      display: none;
-    }
-    .live-preview.visible { display: block; }
-    .live-preview h3 {
-      font-size: 1rem;
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-    .live-preview .preview-content {
-      font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-      font-size: 0.78rem;
-      line-height: 1.7;
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: var(--text-muted);
-    }
-    .live-preview::-webkit-scrollbar { width: 4px; }
-    .live-preview::-webkit-scrollbar-track { background: transparent; }
-    .live-preview::-webkit-scrollbar-thumb { background: rgba(108,99,255,.3); border-radius: 2px; }
 
-    .toggle-preview-btn {
-      position: fixed;
-      right: 1rem;
-      bottom: 5rem;
-      width: 48px; height: 48px;
-      border-radius: 50%;
-      background: var(--accent);
-      color: #fff;
-      border: none;
-      cursor: pointer;
-      font-size: 1.2rem;
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 20px var(--accent-glow);
-      transition: var(--transition);
-      z-index: 100;
-    }
-    .toggle-preview-btn:hover { transform: scale(1.1); }
 
     /* ========== FOOTER ========== */
     footer {
@@ -1057,16 +999,11 @@
 
       </div>
 
-      <!-- Live Preview Sidebar -->
-      <div class="live-preview" id="livePreview">
-        <h3>Live Preview</h3>
-        <div class="preview-content" id="previewContent">Fill in the form to see a live preview of your prompt...</div>
-      </div>
+
     </div>
   </div>
 
-  <!-- Toggle preview FAB -->
-  <button class="toggle-preview-btn" onclick="togglePreview()" title="Toggle live preview">&#128065;</button>
+
 
 
   <!-- Toast -->
@@ -1109,7 +1046,6 @@ const STANDARDS_MAP = {
 // ============================================================
 let currentStep = 1;
 const TOTAL_STEPS = 6;
-let showPreview = false;
 let aiProvider = 'openai';
 
 // ============================================================
@@ -1118,13 +1054,7 @@ let aiProvider = 'openai';
 document.addEventListener('DOMContentLoaded', () => {
   renderWizardProgress();
   createParticles();
-  updatePreview();
 
-  // Listen for form changes to update preview
-  document.querySelectorAll('input, select, textarea').forEach(el => {
-    el.addEventListener('input', updatePreview);
-    el.addEventListener('change', updatePreview);
-  });
 });
 
 // ============================================================
@@ -1202,7 +1132,6 @@ function handleTagInput(e, containerId) {
 
     addTag(containerId, value);
     input.value = '';
-    updatePreview();
   }
 }
 
@@ -1222,7 +1151,6 @@ function addTag(containerId, value) {
 
 function removeTag(el, containerId) {
   el.parentElement.remove();
-  updatePreview();
 }
 
 function getTags(containerId) {
@@ -1245,7 +1173,6 @@ function toggleCheck(item) {
   const cb = item.querySelector('input[type="checkbox"]');
   cb.checked = !cb.checked;
   item.classList.toggle('checked', cb.checked);
-  updatePreview();
 }
 
 // ============================================================
@@ -1440,23 +1367,6 @@ function buildPrompt(data) {
   return sections.join('\n');
 }
 
-// ============================================================
-// LIVE PREVIEW
-// ============================================================
-function updatePreview() {
-  const data = collectFormData();
-  const prompt = buildPrompt(data);
-  document.getElementById('previewContent').textContent = prompt;
-}
-
-function togglePreview() {
-  showPreview = !showPreview;
-  const preview = document.getElementById('livePreview');
-  const layout = document.getElementById('layoutSplit');
-  preview.classList.toggle('visible', showPreview);
-  layout.classList.toggle('show-preview', showPreview);
-  if (showPreview) updatePreview();
-}
 
 // ============================================================
 // COPY & DOWNLOAD
